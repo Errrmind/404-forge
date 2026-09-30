@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>404 Forge</title>
+<meta name="theme-color" content="#0b0d10">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--bg:#0b0d10;--panel:#12151a;--panel2:#1a1f27;--line:#2a3140;--text:#e8edf2;--muted:#8b95a1;--accent:#7cffb2;--warn:#ffb86b;--bad:#ff6b7a;--dock:72px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,sans-serif;min-height:100%}
+body{padding-bottom:calc(var(--dock) + env(safe-area-inset-bottom))}
+.top{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;padding:10px 12px;background:rgba(11,13,16,.94);border-bottom:1px solid var(--line)}
+.brand{display:flex;gap:8px;align-items:center;min-width:110px}.mark{background:var(--accent);color:#04140b;font-weight:800;padding:4px 6px;border-radius:8px}
+.brand small{display:block;color:var(--muted);font-size:11px}
+#q{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:10px 12px;font-size:16px}
+.stage{padding:12px;max-width:920px;margin:0 auto}
+.dock{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(7,1fr);background:#0e1116;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);height:calc(var(--dock) + env(safe-area-inset-bottom))}
+.dock button{background:0;border:0;color:var(--muted);font-size:11px;font-weight:700}
+.dock button.on{color:#04140b;background:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 12px}
+.grid{display:grid;gap:10px;grid-template-columns:1fr 1fr}@media(max-width:640px){.grid{grid-template-columns:1fr}}
+.cat{cursor:pointer}.cat h3{margin:0 0 6px;font-size:15px}.cat p,.muted{color:var(--muted);margin:0}
+.link{display:block;color:var(--accent);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--line)}
+.link small{display:block;color:var(--muted)}
+textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font:14px/1.4 ui-monospace,Consolas,monospace}
+textarea{min-height:130px}.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:999px;padding:8px 12px;font-weight:700}
+.btn.p{background:var(--accent);color:#04140b;border-color:transparent}
+.out{white-space:pre-wrap;font:13px/1.5 ui-monospace,Consolas,monospace;background:#080a0c;border-radius:12px;padding:12px;overflow:auto;max-height:52vh}
+.path{border-left:3px solid var(--accent);padding-left:10px;margin:10px 0}.warn{color:var(--warn)}.bad{color:var(--bad)}h1,h2{font-size:18px;margin:0 0 8px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="mark">404</span><div><strong>FORGE</strong><small>legal map · agents</small></div></div>
+  <input id="q" type="search" placeholder="search map or brief" enterkeyhint="search">
+</header>
+<main id="stage" class="stage"></main>
+<nav class="dock">
+  <button data-v="map">MAP</button><button data-v="generate">GEN</button><button data-v="review">REV</button><button data-v="arch">ARCH</button><button data-v="devops">OPS</button><button data-v="docs">DOCS</button><button data-v="sync">SYNC</button>
+</nav>
+<script>
+const MAP=[
+{id:'privacy',title:'Privacy',blurb:'Blockers, VPN, private DNS. Legal tools only.',items:[
+['uBlock Origin','https://ublockorigin.com','Open-source blocker'],
+['Mullvad','https://mullvad.net','Privacy VPN, audited'],
+['AdGuard Home','https://github.com/AdguardTeam/AdGuardHome','Local DNS sinkhole'],
+['Pi-hole','https://pi-hole.net','Network-wide blocker'],
+['privacyguides.org','https://www.privacyguides.org','Hardening handbook']
+]},
+{id:'local-ai',title:'Local AI',blurb:'Run models on the HP 1050 Ti / Dell / phone.',items:[
+['Ollama','https://ollama.com','Local model runner'],
+['llama.cpp','https://github.com/ggml-org/llama.cpp','GGUF inference'],
+['Jan','https://jan.ai','Offline desktop chat'],
+['AnythingLLM','https://anythingllm.com','Local RAG workspace'],
+['Open WebUI','https://github.com/open-webui/open-webui','Web UI for local LLMs']
+]},
+{id:'linux',title:'Linux / Self-host',blurb:'PaaS, git, reverse proxy. No root required for user units.',items:[
+['Caddy','https://caddyserver.com','Automatic HTTPS proxy'],
+['Coolify','https://coolify.io','Self-hosted PaaS'],
+['Dokploy','https://dokploy.com','Compose PaaS'],
+['Forgejo','https://forgejo.org','Self-hosted git'],
+['OPNsense','https://opnsense.org','Firewall / router']
+]},
+{id:'android',title:'Android / Spacewar',blurb:'Nothing Phone 1 stack. Official or OSS only.',items:[
+['F-Droid','https://f-droid.org','FOSS app store'],
+['Termux','https://termux.dev','Linux env on Android'],
+['postmarketOS','https://postmarketos.org','Linux on phone'],
+['LineageOS','https://lineageos.org','Custom Android'],
+['GrapheneOS','https://grapheneos.org','Hardened Android']
+]},
+{id:'learn',title:'Legal learning',blurb:'Courses and public materials.',items:[
+['OSSU','https://github.com/ossu/computer-science','CS path'],
+['MIT OCW','https://ocw.mit.edu','Free courseware'],
+['Class Central','https://www.classcentral.com','Course index'],
+['Ghidra','https://ghidra-sre.org','NSA SRE tool']
+]},
+{id:'tools',title:'Tools OSS',blurb:'Builders, not cracks.',items:[
+['Let\'s Encrypt','https://letsencrypt.org','Free certs'],
+['Frida','https://frida.re','Dynamic instrumentation'],
+['radare2','https://www.radare.org','Reverse engineering']
+]},
+{id:'grok',title:'Grok Build',blurb:'Official Grok Build surfaces + your forge.',items:[
+['grok.me hub','https://hub.grok.me','Published builds'],
+['directory.grok.me','https://directory.grok.me/?q=games','Public directory'],
+['sitelist.grok.me','https://sitelist.grok.me','Site list'],
+['this repo','https://github.com/Errrmind/404-forge','404 Forge source']
+]}
+];
+const SINKS=/\b(eval|innerHTML|document\.write|child_process|exec\(|pickle|Function\()/;
+function four(d,l,r,h){return [['DIRECT',d],['LATERAL',l],['RADICAL',r],['HYBRID',h]].map(([k,v])=>k+'\n'+v).join('\n\n')}
+const AGENTS={
+generate:{title:'GENERATE · content-generation-agent',ph:'brief: changelog, X thread, README…',run(t){const b=t||'404 Forge ship note';return 'PHASES brief → outline → draft → verify\n\n'+four(
+'Outline: hook, three facts, CTA. Draft 120 words. Verify no piracy claims.',
+'Turn the brief into a 7-tweet thread + README blurb.',
+'Write it as a Termux motd + Caddy error page copy.',
+'Keep README + add one X post + localStorage last-good draft.'
+)+'\n\nDRAFT\n'+b+'\n\nVerify: legal-only language. Rollback: localStorage forge:last.';}},
+review:{title:'REVIEW · code-review-agent',ph:'paste code',run(t){const hits=(t.match(SINKS)||[]);return 'AXES correctness · security · readability · tests · rollback\n\nSinks: '+(hits.join(', ')||'none matched')+'\n\n'+four(
+'Fix sinks, add one test, keep public API.',
+'Split I/O from logic; heuristic scan in CI.',
+'Rewrite as static functions, zero eval, CSP default-src self.',
+'Keep structure; wrap sinks; snapshot last good file.'
+);}},
+arch:{title:'ARCH · architecture-planning-agent',ph:'what should the mesh do?',run(t){return 'MESH\nHP Pavilion i5-8300H + 1050 Ti 32GB Leap — Ollama 7B Q4\nDell Latitude 5400 Citadel i7-8650U 32GB Xen — Caddy + git + docs\nSpacewar NP1 — Termux client + tether\n\nAsk: '+(t||'serve 404 Forge')+'\n\n'+four(
+'Dell serves static 404-forge on 10.8.0.1:8080. HP runs models. Phone browses.',
+'Git mirror on Dell; HP only GPU jobs; phone as hotspot.',
+'Spacewar hosts the PWA via Termux http; laptops are build nodes.',
+'Caddy on Dell, models on HP, PWA cached on phone.'
+);}},
+devops:{title:'DEVOPS · devops-agent',ph:'bind address or path',run(t){const bind=t.trim()||'127.0.0.1:8080';return four(
+'python3 -m http.server 8080 --bind 127.0.0.1',
+'Caddyfile:\n:8080 {\n  bind 10.8.0.1\n  root * .\n  file_server\n}',
+'systemd --user unit 404-forge.service WorkingDirectory=%h/src/404-forge ExecStart=caddy run',
+'Pages on Master + Dell user-unit fallback. No root.'
+)+'\n\nBind hint: '+bind;}},
+docs:{title:'DOCS · doc-forge',ph:'prd | tdd | adr | mvp | okr | postmortem | kickoff | sprint',run(t){const kind=(t.split(/\s+/)[0]||'prd').toLowerCase();const types='prd tdd adr mvp okr postmortem kickoff sprint';
+return 'TYPE '+(types.includes(kind)?kind:'prd')+'\nAllowed: '+types+'\n\n'+four(
+'# '+(kind.toUpperCase())+'\nContext, goal, non-goals, next action.',
+'Same doc as a one-page checklist with owners.',
+'Single ADR: static PWA, legal map only, offline heuristics.',
+'Scaffold now; fill numbers after first Dell deploy.'
+);}},
+sync:{title:'SYNC · mind-sync-architect',ph:'what thread to resurrect?',run(t){return 'STUB dawn-wave-honey-grove is EMPTY. Do not invent unshipped games.\nReal threads: HighlightAI, grok-voice-accessibility-private, grokvista, errforge, 404-forge.\nAsk: '+(t||'resurrect grove')+'\n\n'+four(
+'Write AGENTS.md + index.html into empty repos. Stop.',
+'Mirror 404-forge into grove as the published surface.',
+'Treat grove as an alias CNAME later; keep one source of truth.',
+'Keep grove empty flag + link here from SYNC view.'
+);}}
+};
+const $=id=>document.getElementById(id);
+const stage=$('stage'), q=$('q');
+function setView(v){location.hash=v;render()}
+function view(){return (location.hash||'#map').slice(1)}
+function paths(txt){return '<div class="out">'+txt.replace(/[&<>]/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[s])).replace(/^(DIRECT|LATERAL|RADICAL|HYBRID)$/gm,'</div><div class="path"><b>$1</b>')+'</div>'}
+function agentUI(id){const a=AGENTS[id];const saved=localStorage.getItem('forge:'+id)||'';
+return `<div class="card"><h1>${a.title}</h1><p class="muted">Four-path emit. Offline heuristics. No cloud LLM.</p>
+<textarea id="inp" placeholder="${a.ph}">${saved.replace(/</g,'&lt;')}</textarea>
+<div class="row"><button class="btn p" id="go">Run</button><button class="btn" id="copy">Copy</button></div>
+<div id="out"></div></div>`}
+function mapUI(filter){const f=(filter||'').toLowerCase();
+const cats=MAP.map(c=>{const items=c.items.filter(i=>!f||(c.title+' '+c.blurb+' '+i.join(' ')).toLowerCase().includes(f));
+if(f&&!items.length&&!(c.title+' '+c.blurb).toLowerCase().includes(f))return '';
+return `<div class="card cat" data-cat="${c.id}"><h3>${c.title}</h3><p>${c.blurb}</p></div>`}).join('');
+const open=localStorage.getItem('forge:cat');
+const cat=MAP.find(c=>c.id===open);
+const list=cat?`<div class="card"><h2>${cat.title}</h2>${cat.items.filter(i=>!f||i.join(' ').toLowerCase().includes(f)).map(i=>`<a class="link" href="${i[1]}" target="_blank" rel="noopener">${i[0]}<small>${i[2]}</small></a>`).join('')}</div>`:'<p class="muted">Legal/OSS index only. Not fmhy.net media catalogs.</p>';
+return `<div class="grid">${cats}</div>${list}`}
+function render(){const v=view();
+document.querySelectorAll('.dock button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+if(v==='map'){stage.innerHTML=mapUI(q.value);stage.querySelectorAll('.cat').forEach(el=>el.onclick=()=>{localStorage.setItem('forge:cat',el.dataset.cat);render()});return}
+const a=AGENTS[v];if(!a){setView('map');return}
+stage.innerHTML=agentUI(v);
+const inp=$('inp'), out=$('out');
+out.innerHTML=localStorage.getItem('forge:out:'+v)||'';
+$('go').onclick=()=>{localStorage.setItem('forge:'+v,inp.value);const txt=a.run(inp.value);localStorage.setItem('forge:out:'+v,paths(txt));localStorage.setItem('forge:last',txt);out.innerHTML=paths(txt)};
+$('copy').onclick=()=>navigator.clipboard.writeText(out.innerText||'')}
+q.oninput=()=>{if(view()==='map')render()};
+document.querySelectorAll('.dock button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+window.onhashchange=render;render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
