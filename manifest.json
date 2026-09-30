@@ -1,0 +1,9 @@
+{
+  "name": "404 Forge",
+  "short_name": "404Forge",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b0d10",
+  "theme_color": "#0b0d10",
+  "description": "Sovereign FMHY-style legal map + grok.me skill console"
+}
